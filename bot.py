@@ -80,7 +80,7 @@ try:
     le = LabelEncoder()
     le.fit(train_labels)
 
-    model = tf.keras.models.load_model("best_bilstm.keras")
+    model = tf.keras.models.load_model("best_bilstm.keras", compilek=False)
     logger.info("✅ تم تحميل النموذج والملفات بنجاح")
 except Exception as e:
     logger.error(f"❌ فشل في التحميل: {e}")
