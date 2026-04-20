@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MODEL_PATH = "best_bilstm.keras"
+MODEL_PATH = "best_bilstm_fixed.keras"
 
 try:
     import keras
