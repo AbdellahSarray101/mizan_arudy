@@ -47,7 +47,7 @@ except Exception as e:
     model = None
 
 # ── البحور ────────────────────────────────────────────────────────────────────
-meters = [
+METERS = [
     "السريع",     # Saree
     "الكامل",     # Kamel
     "المتقارب",   # Mutakareb
