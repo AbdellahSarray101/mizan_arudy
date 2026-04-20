@@ -1,4 +1,4 @@
 python-telegram-bot
-tensorflow==2.18.0
-numpy
+tensorflow-cpu==2.15.0
 scikit-learn
+numpy<2.0.0
