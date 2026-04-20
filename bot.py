@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 MODEL_PATH = "best_bilstm.keras"
 
 try:
-    model = tf.keras.models.load_model(MODEL_PATH)
+    import keras
+    model = keras.models.load_model(MODEL_PATH)
     logger.info("✅ تم تحميل النموذج بنجاح")
     logger.info(f"📐 Input shape: {model.input_shape}")
     logger.info(f"📐 Output shape: {model.output_shape}")
