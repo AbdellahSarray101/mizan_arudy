@@ -129,7 +129,7 @@ async def analyze_verse(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- 5. التشغيل ---
 if __name__ == "__main__":
-    token = "8402505295:AAGplKwmq7GBB_dSYE64eGlSXQ6BpVYxXKQ"
+    token = "8535057838:AAHzldiMKTQQg0ADYsTmfFYkvzncFrAikjk"
     app = ApplicationBuilder().token(token).build()
     app.add_handler(CommandHandler("start", lambda u, c: u.message.reply_text("أهلاً بك! أرسل بيتاً لتحليله.")))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, analyze_verse))
