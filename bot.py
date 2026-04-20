@@ -11,6 +11,7 @@ import re
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import tensorflow as tf
+import keras
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -20,18 +21,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MODEL_PATH = "best_bilstm_fixed.keras"
+# ── تحميل النموذج من الأوزان ──────────────────────────────────────────────────
+def build_model():
+    m = keras.Sequential([
+        keras.layers.Embedding(45, 128),
+        keras.layers.Bidirectional(keras.layers.LSTM(128, return_sequences=True)),
+        keras.layers.BatchNormalization(momentum=0.99, epsilon=0.001),
+        keras.layers.Dropout(0.5),
+        keras.layers.Bidirectional(keras.layers.LSTM(64)),
+        keras.layers.BatchNormalization(momentum=0.99, epsilon=0.001),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(64, activation='relu'),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(14, activation='softmax'),
+    ])
+    m(tf.zeros((1, 128)))  # بناء النموذج
+    return m
 
 try:
-    import keras
-    model = keras.models.load_model(MODEL_PATH)
+    model = build_model()
+    model.load_weights("model.weights.h5")
     logger.info("✅ تم تحميل النموذج بنجاح")
-    logger.info(f"📐 Input shape: {model.input_shape}")
-    logger.info(f"📐 Output shape: {model.output_shape}")
 except Exception as e:
     logger.error(f"❌ فشل تحميل النموذج: {e}")
     model = None
 
+# ── البحور ────────────────────────────────────────────────────────────────────
 METERS = [
     "الخفيف",
     "الرجز",
@@ -52,6 +67,7 @@ METERS = [
 MAX_LEN = 128
 ARABIC_CHARS = "ابتثجحخدذرزسشصضطظعغفقكلمنهويءآأإةىؤئ"
 
+# ── معالجة النص ───────────────────────────────────────────────────────────────
 def normalize_arabic(text: str) -> str:
     text = re.sub(r'[\u064B-\u065F\u0670]', '', text)
     text = re.sub(r'[^\u0600-\u06FF\s]', '', text)
@@ -76,6 +92,7 @@ def predict_meter(verse: str):
     meter = METERS[idx] if idx < len(METERS) else f"صنف {idx}"
     return meter, confidence
 
+# ── معالجات البوت ─────────────────────────────────────────────────────────────
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status = "✅ النموذج محمّل وجاهز" if model else "❌ النموذج لم يُحمَّل"
     msg = (
@@ -137,12 +154,12 @@ async def analyze_verse(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"خطأ في التحليل: {e}")
         await update.message.reply_text(f"❌ خطأ في التحليل:\n`{e}`", parse_mode="Markdown")
 
+# ── نقطة الدخول ───────────────────────────────────────────────────────────────
 def main():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if not token:
         raise ValueError("❌ لم يُعثر على TELEGRAM_BOT_TOKEN في متغيرات البيئة!")
 
-    logger.info(f"📁 مسار العمل: {os.getcwd()}")
     logger.info(f"📁 الملفات في المجلد: {os.listdir('.')}")
 
     app = ApplicationBuilder().token(token).build()
@@ -152,7 +169,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, analyze_verse))
 
     logger.info("🤖 البوت يعمل الآن...")
-    app.run_polling()
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
