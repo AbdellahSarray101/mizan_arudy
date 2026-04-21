@@ -6,6 +6,20 @@ import os
 import logging
 import numpy as np
 import re
+import threading
+import http.server
+import socketserver
+import os
+
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    handler = http.server.SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", port), handler) as httpd:
+        print(f"Serving at port {port}")
+        httpd.serve_forever()
+
+# تشغيل السيرفر الوهمي في خلفية الكود
+threading.Thread(target=run_dummy_server, daemon=True).start()
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
